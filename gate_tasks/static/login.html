@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in · Gate Tasks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="/static/css/app.css?v=__VERSION__">
+</head>
+<body>
+    <canvas id="space-canvas"></canvas>
+    <div class="auth-wrap">
+        <div class="auth-card dialog">
+            <div class="logo-title">
+                <div class="logo-icon"></div>
+                <h1 style="font-size:22px;">Gate Tasks</h1>
+            </div>
+
+            <form id="login-form" style="display:none;">
+                <h2>Sign in</h2>
+                <p class="sub">Your own board, your own tasks.</p>
+                <div class="field"><label for="li-username">Username</label><input id="li-username" autocomplete="username" required autofocus></div>
+                <div class="field"><label for="li-password">Password</label><input id="li-password" type="password" autocomplete="current-password" required></div>
+                <div class="error" id="li-error"></div>
+                <button type="submit" class="btn-success">Sign in</button>
+                <p class="sub" style="margin:16px 0 0; font-size:12px;">Forgot your password? Ask an admin to reset it.</p>
+            </form>
+
+            <form id="setup-form" style="display:none;">
+                <h2>Welcome! Create the admin account</h2>
+                <p class="sub">This is the first start. The admin can add colleagues, open anyone's board and reset passwords.
+                    <span id="legacy-note"></span></p>
+                <div class="field"><label for="su-name">Your full name</label><input id="su-name" maxlength="60" required></div>
+                <div class="field"><label for="su-username">Username</label><input id="su-username" maxlength="40" pattern="[A-Za-z0-9._\-]+" title="Letters, numbers, dot, dash or underscore" required></div>
+                <div class="field"><label for="su-password">Password (6+ characters)</label><input id="su-password" type="password" minlength="6" autocomplete="new-password" required></div>
+                <div class="field"><label for="su-password2">Repeat password</label><input id="su-password2" type="password" minlength="6" autocomplete="new-password" required></div>
+                <div class="error" id="su-error"></div>
+                <button type="submit" class="btn-success">Create admin &amp; open my board</button>
+            </form>
+        </div>
+    </div>
+    <div class="footer-note">Gate Tasks v__VERSION__</div>
+    <script src="/static/js/login.js?v=__VERSION__"></script>
+</body>
+</html>

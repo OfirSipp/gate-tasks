@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gate Tasks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="/static/css/app.css?v=__VERSION__">
+</head>
+<body>
+
+    <canvas id="space-canvas"></canvas>
+    <canvas id="confetti-canvas"></canvas>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <!-- Shared modal: notes, deep-dives, analytics, password, team -->
+    <div id="expansion-modal" class="expansion-overlay" onclick="closeExpandedView(event)">
+        <div class="expanded-content-card dialog" id="expanded-card-body">
+            <button class="close-expanded" onclick="closeExpandedView(null)" aria-label="Close">×</button>
+            <div id="expanded-inner-html"></div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="logo-title">
+            <div class="logo-icon"></div>
+            <h1>Gate Tasks</h1>
+        </div>
+        <div class="header-right">
+            <div class="board-switch" id="board-switch" style="display:none;">
+                <span>Board</span>
+                <select id="board-select" class="compact" title="Admins can open anyone's board"></select>
+            </div>
+            <button type="button" id="pet-toggle" class="pet-toggle" title="Show / hide the desktop pet (double-click the pet to make it cheer)" style="display:none;">🐾 Pet</button>
+            <select id="pet-skin" class="pet-skin" title="Choose your pet" style="display:none;">
+                <option value="clawd">🟧 Clawd</option>
+                <option value="cat">🐱 Amir Latex</option>
+                <option value="bsh">🐈 Earl Grey (British Shorthair)</option>
+            </select>
+            <div class="user-profile" id="user-profile" onclick="toggleUserMenu(event)">
+                <div class="avatar" id="user-avatar"></div>
+                <span id="user-name" style="font-size: 13px; font-weight: 500;"></span>
+                <span style="font-size: 10px; color: #94a3b8;">▼</span>
+                <div class="user-menu" id="user-menu" onclick="event.stopPropagation()">
+                    <div class="menu-head"><span id="menu-name"></span><small id="menu-role"></small></div>
+                    <button type="button" onclick="openChangePassword()">🔑 Change password</button>
+                    <button type="button" class="admin-only" onclick="openTeam()">👥 Manage team</button>
+                    <button type="button" class="admin-only danger" onclick="confirmShutdown()">⏻ Stop server</button>
+                    <button type="button" class="danger" onclick="logout()">↩ Sign out</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="viewing-banner" id="viewing-banner"></div>
+
+    <div class="dashboard">
+        <div class="main-content">
+
+            <div class="creation-bar">
+                <form id="task-form" onsubmit="handleFormSubmit(event)" class="form-grid">
+                    <input type="hidden" id="task-id">
+
+                    <div class="form-group large">
+                        <label for="task-title">Create New Task</label>
+                        <input type="text" id="task-title" placeholder="Task Title..." maxlength="200" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-category">Category</label>
+                        <input type="text" id="task-category" placeholder="e.g. Management" maxlength="60" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-priority">Priority</label>
+                        <select id="task-priority">
+                            <option value="Pass" selected>Pass</option>
+                            <option value="Fail">Fail</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-deadline">Deadline</label>
+                        <input type="date" id="task-deadline" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="task-owner">Assign to</label>
+                        <select id="task-owner"></select>
+                    </div>
+
+                    <div class="action-btns">
+                        <button type="submit" id="submit-btn" class="btn-primary">Add Task</button>
+                        <button type="button" id="cancel-btn" class="btn-secondary" onclick="resetForm()" style="display:none;">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="kanban-board" id="kanban-board">
+                <div class="kanban-column" id="col-box-To Do" draggable="true" ondragstart="dragColumn(event)" ondragover="allowDropColumn(event)" ondrop="dropColumn(event, 'To Do')" ondragend="dragEndColumn(event)" ondragenter="allowDrop(event)">
+                    <div class="column-header" id="header-todo" onclick="toggleColumn('To Do')" ondblclick="expandColumn('To Do')" title="Click to fold | Double-click for a deep-dive">
+                        <div style="display:flex; align-items:center; gap:8px;"><span class="collapse-icon">▼</span><span>To Do ⇄</span></div>
+                        <span id="count-To Do" style="color:#64748b;">0</span>
+                    </div>
+                    <div id="col-To Do" class="column-content" ondragover="allowDrop(event)" ondrop="dropTask(event, 'To Do')"></div>
+                </div>
+
+                <div class="kanban-column" id="col-box-In Progress" draggable="true" ondragstart="dragColumn(event)" ondragover="allowDropColumn(event)" ondrop="dropColumn(event, 'In Progress')" ondragend="dragEndColumn(event)" ondragenter="allowDrop(event)">
+                    <div class="column-header" id="header-prog" onclick="toggleColumn('In Progress')" ondblclick="expandColumn('In Progress')" title="Click to fold | Double-click for a deep-dive">
+                        <div style="display:flex; align-items:center; gap:8px;"><span class="collapse-icon">▼</span><span>In Progress ⇄</span></div>
+                        <span id="count-In Progress" style="color:#64748b;">0</span>
+                    </div>
+                    <div id="col-In Progress" class="column-content" ondragover="allowDrop(event)" ondrop="dropTask(event, 'In Progress')"></div>
+                </div>
+
+                <div class="kanban-column" id="col-box-No Need" draggable="true" ondragstart="dragColumn(event)" ondragover="allowDropColumn(event)" ondrop="dropColumn(event, 'No Need')" ondragend="dragEndColumn(event)" ondragenter="allowDrop(event)">
+                    <div class="column-header" id="header-need" onclick="toggleColumn('No Need')" ondblclick="expandColumn('No Need')" title="Click to fold | Double-click for a deep-dive">
+                        <div style="display:flex; align-items:center; gap:8px;"><span class="collapse-icon">▼</span><span>No Need ⇄</span></div>
+                        <span id="count-No Need" style="color:#64748b;">0</span>
+                    </div>
+                    <div id="col-No Need" class="column-content" ondragover="allowDrop(event)" ondrop="dropTask(event, 'No Need')"></div>
+                </div>
+
+                <div class="kanban-column" id="col-box-Completed" draggable="true" ondragstart="dragColumn(event)" ondragover="allowDropColumn(event)" ondrop="dropColumn(event, 'Completed')" ondragend="dragEndColumn(event)" ondragenter="allowDrop(event)">
+                    <div class="column-header" id="header-comp" onclick="toggleColumn('Completed')" ondblclick="expandColumn('Completed')" title="Click to fold | Double-click for a deep-dive">
+                        <div style="display:flex; align-items:center; gap:8px;"><span class="collapse-icon">▼</span><span>Completed ⇄</span></div>
+                        <span id="count-Completed" style="color:#64748b;">0</span>
+                    </div>
+                    <div id="col-Completed" class="column-content" ondragover="allowDrop(event)" ondrop="dropTask(event, 'Completed')"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="sidebar" id="sidebar-box" ondblclick="expandAnalytics()" title="Double-click for advanced analytics">
+            <div class="search-container">
+                <input type="text" id="search-box" placeholder="🔍 Search tasks or notes..." oninput="renderTasks()" style="border-radius: 20px;">
+                <div class="task-counter-pill" id="global-counter">0 / 0</div>
+            </div>
+
+            <div class="analytics-header">
+                Analytics <span>🚀 (Double-Click Expand)</span>
+            </div>
+
+            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 10px;">Task Distribution</div>
+            <div class="chart-box" style="height: 160px; justify-content: center;">
+                <canvas id="donutChart" width="120" height="120"></canvas>
+                <div class="donut-legend">
+                    <div class="legend-item"><div class="dot" style="background:#f43f5e"></div>To Do</div>
+                    <div class="legend-item"><div class="dot" style="background:#f59e0b"></div>Progress</div>
+                    <div class="legend-item"><div class="dot" style="background:#8b5cf6"></div>No Need</div>
+                    <div class="legend-item"><div class="dot" style="background:#10b981"></div>Done</div>
+                </div>
+            </div>
+
+            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 10px;">Pass / Fail Distribution</div>
+            <div class="chart-box" id="pass-fail-box" style="height: 100px; padding: 20px; justify-content: center; align-items: center;"></div>
+
+            <div style="font-size: 11px; color: #94a3b8; margin-bottom: 10px; display: flex; justify-content: space-between;">
+                <span>Completion Score</span> <span id="score-text" style="color:#38bdf8; font-weight:700;">0%</span>
+            </div>
+            <div class="chart-box" style="height: 90px; padding: 10px; overflow:hidden;">
+                <canvas id="gaugeChart" width="200" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">Gate Tasks v__VERSION__</div>
+
+    <script>window.GATE_TASKS = { petEnabled: __PET_ENABLED__ };</script>
+    <script src="/static/js/app.js?v=__VERSION__"></script>
+    <script type="module" src="/static/js/pet.js?v=__VERSION__"></script>
+</body>
+</html>

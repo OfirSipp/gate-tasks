@@ -1,0 +1,26 @@
+# Your data -- never commit it
+data/
+*.db
+*.db-shm
+*.db-wal
+tasks_db.json
+install_check.txt
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Builds
+build/
+dist/
+*.spec
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

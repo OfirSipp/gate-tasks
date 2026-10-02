@@ -1,0 +1,25 @@
+[project]
+name = "gate-tasks"
+version = "2.0.0"
+description = "A small self-hosted kanban task manager for the office: a private board per person, task hand-offs, Pass/Fail tracking and a desktop pet."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Ofir Sipouren" }]
+dependencies = ["fastapi>=0.110", "uvicorn>=0.27", "pydantic>=2.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27"]
+
+[project.scripts]
+gate-tasks = "gate_tasks.main:main"
+
+[tool.setuptools]
+packages = ["gate_tasks"]
+
+[tool.setuptools.package-data]
+gate_tasks = ["static/*.html", "static/css/*", "static/js/*", "static/pet/*"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
