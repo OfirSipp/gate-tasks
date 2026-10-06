@@ -12,7 +12,7 @@ A small, self-hosted task manager for the office. Every person signs in to a **p
 - **Kanban.** Drag tasks between columns, drag columns to reorder, click to fold a column, double-click for a deep-dive.
 - **Notes.** Double-click a card for a notes log. Search covers titles, categories and notes.
 - **Analytics.** Status donut, Pass/Fail split, completion gauge, overdue count and a category breakdown.
-- **Fun.** Confetti on a Pass, a shake on a Fail, a starfield, and a desktop pet that walks on the board. Pick the pet: Clawd, Amir Latex, or Earl Grey the British Shorthair. There are also a couple of easter eggs.
+- **Fun.** Confetti on a Pass, a shake on a Fail, a starfield, and a desktop pet that walks on the board. Pick the pet: Clawd, Catman, or the British Shorthair cat. There are also a couple of easter eggs.
 - **Safe defaults.** Passwords are hashed with PBKDF2, sessions are HttpOnly cookies, failed sign-ins are rate-limited, and everything you type is escaped before it's shown.
 
 | First start | Team management |
