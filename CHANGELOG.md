@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Deadline is optional; tasks without one show "No deadline" and are never marked overdue.
+
 ## 2.0.0 — 2026-10-02
 - Accounts: sign-in, first-run admin setup, a private board per person.
 - Assign tasks to colleagues; admins can open any board and manage the team.

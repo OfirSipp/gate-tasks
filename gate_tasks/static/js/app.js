@@ -451,7 +451,7 @@ function expandColumn(colName) {
     const list = colTasks.length === 0 ? '<p style="color:#94a3b8;">No tasks in this column.</p>' : colTasks.map(t => `
         <div style="background:rgba(255,255,255,0.03); padding:12px; border-radius:10px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.05);">
             <div style="font-weight:600; color:#f8fafc; font-size:14px;">${esc(t.title)}</div>
-            <div style="font-size:11px; color:#94a3b8; margin-top:4px;">Category: ${esc(t.category)} | Priority: ${esc(t.priority)} | Deadline: ${esc(t.deadline)}</div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:4px;">Category: ${esc(t.category)} | Priority: ${esc(t.priority)} | Deadline: ${t.deadline ? esc(t.deadline) : 'none'}</div>
             ${t.notes ? `<div style="font-size:11px; color:#cbd5e1; margin-top:6px; background:rgba(0,0,0,0.2); padding:6px; border-radius:6px; white-space:pre-wrap;">Notes: ${esc(t.notes)}</div>` : ''}
         </div>`).join('');
     openModal(`
@@ -525,7 +525,7 @@ function renderTasks() {
                     ${task.notes ? '<span class="notes-badge">has notes 📝</span>' : ''}
                 </div>
                 ${fromSomeoneElse ? `<span class="assigned-badge">from ${esc(task.created_by_name || 'a colleague')}</span>` : ''}
-                <div class="deadline${overdue ? ' overdue' : ''}" style="${overdue ? '' : 'color:#64748b;'}">🗓 ${esc(task.deadline)}${overdue ? ' · overdue' : ''}</div>
+                <div class="deadline${overdue ? ' overdue' : ''}" style="${overdue ? '' : 'color:#64748b;'}">🗓 ${task.deadline ? esc(task.deadline) : 'No deadline'}${overdue ? ' · overdue' : ''}</div>
             </div>`;
         document.getElementById(`col-${task.status}`).appendChild(card);
     });

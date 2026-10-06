@@ -87,6 +87,16 @@ def test_assign_task_to_colleague(client):
     assert updated["status"] == "In Progress" and updated["notes"] == "on it" and updated["title"] == "Check gate 4"
 
 
+def test_deadline_is_optional(client):
+    setup_admin(client)
+    task = client.post("/api/tasks", json={"title": "No rush"}).json()
+    assert task["deadline"] == ""
+    dated = client.put(f"/api/tasks/{task['id']}", json={"deadline": "2026-12-31"}).json()
+    assert dated["deadline"] == "2026-12-31"
+    cleared = client.put(f"/api/tasks/{task['id']}", json={"deadline": ""}).json()
+    assert cleared["deadline"] == ""
+
+
 def test_admin_manages_team(client):
     setup_admin(client)
     dana = add_user(client, "dana")
