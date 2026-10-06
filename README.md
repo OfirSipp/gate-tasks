@@ -1,6 +1,6 @@
 # Gate Tasks
 
-A small, self-hosted kanban task manager for the office. Every person signs in to a **private board**, can hand tasks to colleagues, and tracks **Pass / Fail** results through *To Do → In Progress → No Need → Completed*. It runs on one PC with Python, keeps everything in a single SQLite file, and needs no cloud account.
+A small, self-hosted task manager for the office. Every person signs in to a **private board**, can hand tasks to colleagues, and tracks **Pass / Fail** results through *To Do → In Progress → No Need → Completed*. It runs on one PC with Python, keeps everything in a single SQLite file, and needs no cloud account.
 
 ![Gate Tasks board](docs/screenshot.png)
 
