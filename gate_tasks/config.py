@@ -23,6 +23,8 @@ else:
 
 DATA_DIR = Path(os.environ.get("GATE_TASKS_DATA_DIR", PROJECT_DIR / "data"))
 DB_PATH = Path(os.environ.get("GATE_TASKS_DB", DATA_DIR / "gate_tasks.db"))
+# Reports from "Export report" land here; the folder is created on the first export.
+EXPORT_DIR = Path(os.environ.get("GATE_TASKS_EXPORT_DIR", PROJECT_DIR / "data exports"))
 # The single-user version stored everything in tasks_db.json; it is imported once on first setup.
 LEGACY_JSON = Path(os.environ.get("GATE_TASKS_LEGACY_JSON", PROJECT_DIR / "tasks_db.json"))
 

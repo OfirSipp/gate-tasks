@@ -12,6 +12,7 @@ A small, self-hosted task manager for the office. Every person signs in to a **p
 - **Kanban.** Drag tasks between columns, drag columns to reorder, click to fold a column, double-click for a deep-dive.
 - **Notes.** Double-click a card for a notes log. Search covers titles, categories and notes.
 - **Analytics.** Status donut, Pass/Fail split, completion gauge, overdue count and a category breakdown.
+- **Export report.** *Your name → Export report* saves an Excel report and a CSV in the `data exports` folder. The report has a summary with charts, passed and failed tests on separate sheets, and a notes & anomalies sheet.
 - **Fun.** Confetti on a Pass, a shake on a Fail, a starfield, and a desktop pet that walks on the board. Pick the pet: Clawd, Catman, or the British Shorthair cat. There are also a couple of easter eggs.
 - **Safe defaults.** Passwords are hashed with PBKDF2, sessions are HttpOnly cookies, failed sign-ins are rate-limited, and everything you type is escaped before it's shown.
 
@@ -57,9 +58,23 @@ All settings are environment variables and all are optional.
 | `GATE_TASKS_HOST` | `127.0.0.1` | Address to listen on (`0.0.0.0` = whole network) |
 | `GATE_TASKS_PORT` | `8000` | Port |
 | `GATE_TASKS_DATA_DIR` | `./data` | Where the database lives |
+| `GATE_TASKS_EXPORT_DIR` | `./data exports` | Where *Export report* saves its files |
 | `GATE_TASKS_PET` | `1` | `0` removes the desktop pet for everyone |
 | `GATE_TASKS_OPEN_BROWSER` | `1` | Open the browser on start |
 | `GATE_TASKS_HIDE_CONSOLE` | `1` | Hide the console window on Windows (stop the server from *your name → Stop server*) |
+
+## Export report
+
+*Your name → 📊 Export report* writes two files to the **`data exports`** folder next to Gate Tasks. The folder is created the first time.
+
+- **`.xlsx`:** an Excel report with:
+  - **Summary:** totals, pass rate, a verdict and charts. The category and person breakdowns appear only when there's more than one.
+  - **Passed**, **Failed**, **Open** and **No need** sheets (only the ones that have tests).
+  - **Notes & anomalies:** failed tests, overdue tests and open tests unchanged for 14+ days, plus every note.
+  - **All tests:** everything in one table.
+- **`.csv`:** the same table as plain data for other tools.
+
+Admins can export the whole team or one board. Everyone else exports their own board. On another PC, *Download a copy* saves the Excel file there too. Set `GATE_TASKS_EXPORT_DIR` to use a different folder.
 
 ## Your data
 

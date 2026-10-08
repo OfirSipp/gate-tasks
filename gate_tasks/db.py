@@ -195,6 +195,9 @@ class Database:
     def list_tasks(self, owner_id: int) -> list[dict]:
         return self._all(TASK_SELECT + " WHERE t.owner_id = ? ORDER BY t.id", (owner_id,))
 
+    def list_all_tasks(self) -> list[dict]:
+        return self._all(TASK_SELECT + " ORDER BY o.display_name COLLATE NOCASE, t.id")
+
     def get_task(self, task_id: int) -> Optional[dict]:
         row = self._one(TASK_SELECT + " WHERE t.id = ?", (task_id,))
         return dict(row) if row else None
