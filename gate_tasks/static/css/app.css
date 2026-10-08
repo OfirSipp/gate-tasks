@@ -259,6 +259,9 @@ select option { background: #0f111a; }
 .dialog .row > * { flex: 1; min-width: 140px; }
 .dialog .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
 .dialog .error { color: #fda4af; font-size: 12px; min-height: 16px; margin-bottom: 8px; }
+.export-list { list-style: none; display: grid; gap: 8px; margin-bottom: 14px; font-size: 13px; color: #cbd5e1; }
+.export-list li { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 12px; overflow-wrap: anywhere; }
+button:disabled { opacity: 0.5; cursor: wait; }
 .check { display: flex !important; flex-direction: row !important; align-items: center; gap: 8px; }
 .check input { width: auto; }
 

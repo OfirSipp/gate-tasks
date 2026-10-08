@@ -5,13 +5,14 @@ import threading
 import time
 from pathlib import Path
 from typing import Literal, Optional
+from urllib.parse import quote
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from . import __version__, config
+from . import __version__, config, export
 from .db import Database
 
 # On Windows the registry can map .js to text/plain, which browsers refuse to run as a module.
@@ -66,6 +67,10 @@ class TaskIn(BaseModel):
     owner_id: Optional[int] = None  # assign to a colleague; defaults to yourself
 
 
+class ExportIn(BaseModel):
+    user_id: Optional[int] = None  # one board; leave out for the whole team (admins) or your own board
+
+
 class TaskUpdateIn(BaseModel):
     title: Optional[str] = Field(default=None, min_length=1, max_length=200)
     category: Optional[str] = Field(default=None, max_length=60)
@@ -77,11 +82,12 @@ class TaskUpdateIn(BaseModel):
 
 
 def create_app(db_path: Optional[Path] = None, legacy_json: Optional[Path] = None,
-               static_dir: Optional[Path] = None) -> FastAPI:
+               static_dir: Optional[Path] = None, export_dir: Optional[Path] = None) -> FastAPI:
     app = FastAPI(title="Gate Tasks", version=__version__, docs_url=None, redoc_url=None)
     db = Database(db_path or config.DB_PATH)
     legacy = legacy_json if legacy_json is not None else config.LEGACY_JSON
     static = Path(static_dir or config.STATIC_DIR)
+    exports = Path(export_dir or config.EXPORT_DIR)
     app.state.db = db
     app.state.server = None  # set by main() so an admin can stop the server from the UI
     failures: dict[str, tuple[int, float]] = {}
@@ -256,6 +262,30 @@ def create_app(db_path: Optional[Path] = None, legacy_json: Optional[Path] = Non
         task_for(user, task_id)
         db.delete_task(task_id)
         return {"ok": True}
+
+    # -- reports -----------------------------------------------------------------------------
+    @app.post("/api/export")
+    def export_report(body: ExportIn, user: dict = Depends(current_user)):
+        """Save an Excel report in the exports folder and send it back for an optional download."""
+        if body.user_id is None and user["is_admin"]:
+            tasks, label, slug, team = db.list_all_tasks(), "Whole team", "team", True
+        else:
+            owner = db.get_user(user["id"] if body.user_id is None else body.user_id)
+            if owner is None:
+                raise HTTPException(status_code=404, detail="User not found.")
+            if owner["id"] != user["id"] and not user["is_admin"]:
+                raise HTTPException(status_code=403, detail="You can only export your own board.")
+            tasks, label, slug, team = (db.list_tasks(owner["id"]), f"{owner['display_name']}'s board",
+                                        owner["username"], False)
+        try:
+            saved = export.save_report(exports, tasks, scope_label=label, scope_slug=slug,
+                                       generated_by=user["display_name"], team=team)
+        except OSError as exc:
+            raise HTTPException(status_code=500, detail=f"Couldn't write to {exports}: {exc.strerror or exc}")
+        return Response(saved.data, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quote(saved.path.name)}",
+                                 "X-Export-Folder": quote(str(saved.folder)),
+                                 "X-Export-File": quote(saved.path.name)})
 
     # -- admin -------------------------------------------------------------------------------
     @app.post("/api/admin/shutdown")

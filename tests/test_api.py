@@ -1,5 +1,7 @@
+import io
 import json
 
+import openpyxl
 import pytest
 from fastapi.testclient import TestClient
 
@@ -15,7 +17,7 @@ def client(tmp_path):
         {"id": 1, "title": "Old task", "category": "QA", "priority": "Fail", "deadline": "2026-01-01",
          "status": "Completed", "notes": "from v1"},
     ]))
-    app = create_app(db_path=tmp_path / "test.db", legacy_json=legacy)
+    app = create_app(db_path=tmp_path / "test.db", legacy_json=legacy, export_dir=tmp_path / "data exports")
     with TestClient(app) as c:
         yield c
     app.state.db.close()
@@ -95,6 +97,37 @@ def test_deadline_is_optional(client):
     assert dated["deadline"] == "2026-12-31"
     cleared = client.put(f"/api/tasks/{task['id']}", json={"deadline": ""}).json()
     assert cleared["deadline"] == ""
+
+
+def test_export_report(client, tmp_path):
+    setup_admin(client)
+    dana = add_user(client, "dana")
+    login(client, "ofir", "secret123")
+    client.post("/api/tasks", json={"title": "Gate 1", "category": "QA", "status": "Completed"})
+    client.post("/api/tasks", json={"title": "Gate 2", "category": "QA", "priority": "Fail", "status": "Completed",
+                                    "notes": "Seal leaks"})
+    client.post("/api/tasks", json={"title": "=1+1", "category": "Ops", "owner_id": dana["id"], "deadline": "2020-01-01"})
+    folder = tmp_path / "data exports"
+    assert not folder.exists()
+
+    r = client.post("/api/export", json={})
+    assert r.status_code == 200 and r.headers["content-type"].startswith("application/vnd.openxmlformats")
+    assert [p.suffix for p in folder.iterdir()] == [".xlsx"]
+    book = openpyxl.load_workbook(io.BytesIO(r.content), data_only=True)
+    assert book.sheetnames == ["Summary", "Passed", "Failed", "Open", "Notes & anomalies", "All tests"]
+    # 4 tests: the imported v1 task (failed), Gate 1 (passed), Gate 2 (failed) and Dana's overdue one (open)
+    summary = book["Summary"]
+    assert [summary[c].value for c in ("B7", "C7", "E7", "I7", "O7")] == [4, 1, 2, 1, 1]
+    assert summary["G7"].value == pytest.approx(1 / 3)
+    assert book["All tests"]["C6"].value == "=1+1" and book["All tests"]["C6"].data_type == "s"  # stays text
+    texts = [c.value for ws in book.worksheets for row in ws.iter_rows() for c in row if isinstance(c.value, str)]
+    assert all(t.isascii() for t in texts)  # English only: no emoji or symbols in the report's own text
+
+    login(client, "dana")
+    mine = openpyxl.load_workbook(io.BytesIO(client.post("/api/export", json={}).content))
+    assert mine["All tests"].max_row == 6
+    assert client.post("/api/export", json={"user_id": 1}).status_code == 403
+    assert len(list(folder.glob("*.xlsx"))) == 2
 
 
 def test_admin_manages_team(client):

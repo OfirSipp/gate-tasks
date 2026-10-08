@@ -211,6 +211,76 @@ async function shutdownServer() {
 }
 
 // ---------------------------------------------------------------------------------------------
+// reports
+// ---------------------------------------------------------------------------------------------
+function openExport() {
+    const board = viewingId === me.id ? 'my board' : `${esc(personName(viewingId))}'s board`;
+    const choices = me.is_admin
+        ? `<button type="button" class="btn-secondary" onclick="runExport(${viewingId})">Only ${board}</button>
+           <button type="button" class="btn-success" onclick="runExport(null)">Whole team</button>`
+        : '<button type="button" class="btn-success" onclick="runExport(null)">Export my board</button>';
+    openModal(`
+        <h2>📊 Export report</h2>
+        <p class="sub">Saves one Excel report in the <strong>data exports</strong> folder next to Gate Tasks.
+            The folder is created the first time.</p>
+        <ul class="export-list">
+            <li>Summary: key figures, a verdict and charts</li>
+            <li>Passed and failed tests on separate sheets, plus the open ones</li>
+            <li>Notes and anomalies: failed, overdue and stale tests</li>
+            <li>Every test in one table</li>
+        </ul>
+        <div class="error" id="export-error"></div>
+        <div class="actions" id="export-actions">
+            <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+            ${choices}
+        </div>`);
+}
+
+let lastExport = null;  // { url, name } of the report just made, for "Download a copy"
+async function runExport(userId) {
+    const buttons = document.querySelectorAll('#export-actions button');
+    buttons.forEach(b => { b.disabled = true; });
+    let res = null;
+    try {
+        res = await fetch('/api/export', {
+            method: 'POST', credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ user_id: userId }),
+        });
+    } catch (e) { /* network error, handled below */ }
+    if (res && res.status === 401) { window.location.href = '/login'; return; }
+    if (!res || !res.ok) {
+        let msg = 'Export failed.';
+        try { msg = (await res.json()).detail || msg; } catch (e) { /* no JSON body */ }
+        document.getElementById('export-error').textContent = msg;
+        buttons.forEach(b => { b.disabled = false; });
+        petDo(p => p.feel('sad', 3));
+        return;
+    }
+    const folder = decodeURIComponent(res.headers.get('X-Export-Folder') || '');
+    const xlsx = decodeURIComponent(res.headers.get('X-Export-File') || 'Gate Tasks report.xlsx');
+    if (lastExport) URL.revokeObjectURL(lastExport.url);
+    lastExport = { url: URL.createObjectURL(await res.blob()), name: xlsx };
+    openModal(`
+        <h2>✅ Report ready</h2>
+        <p class="sub">Saved in <strong>${esc(folder)}</strong></p>
+        <ul class="export-list"><li>${esc(xlsx)}</li></ul>
+        <div class="actions">
+            <button type="button" class="btn-secondary" onclick="closeModal()">Close</button>
+            <button type="button" class="btn-success" onclick="downloadExport()">⬇ Download a copy</button>
+        </div>`);
+    petDo(p => p.cheer());
+}
+
+function downloadExport() {
+    const link = document.createElement('a');
+    link.href = lastExport.url;
+    link.download = lastExport.name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+}
+
+// ---------------------------------------------------------------------------------------------
 // team management (admins)
 // ---------------------------------------------------------------------------------------------
 async function openTeam() {
