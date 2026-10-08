@@ -114,11 +114,12 @@ def test_export_report(client, tmp_path):
     assert r.status_code == 200 and r.headers["content-type"].startswith("application/vnd.openxmlformats")
     assert [p.suffix for p in folder.iterdir()] == [".xlsx"]
     book = openpyxl.load_workbook(io.BytesIO(r.content), data_only=True)
-    assert book.sheetnames == ["Summary", "Passed", "Failed", "Open", "Notes & anomalies", "All tests"]
+    visible = [ws.title for ws in book.worksheets if ws.sheet_state == "visible"]
+    assert visible == ["Summary", "Passed", "Failed", "Open", "Notes & anomalies", "All tests"]
     # 4 tests: the imported v1 task (failed), Gate 1 (passed), Gate 2 (failed) and Dana's overdue one (open)
     summary = book["Summary"]
-    assert [summary[c].value for c in ("B7", "C7", "E7", "I7", "O7")] == [4, 1, 2, 1, 1]
-    assert summary["G7"].value == pytest.approx(1 / 3)
+    assert [summary[c].value for c in ("B6", "D6", "F6", "J6", "L6")] == [4, 1, 2, 1, 1]
+    assert summary["H6"].value == pytest.approx(1 / 3)
     assert book["All tests"]["C6"].value == "=1+1" and book["All tests"]["C6"].data_type == "s"  # stays text
     texts = [c.value for ws in book.worksheets for row in ws.iter_rows() for c in row if isinstance(c.value, str)]
     assert all(t.isascii() for t in texts)  # English only: no emoji or symbols in the report's own text

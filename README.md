@@ -67,7 +67,7 @@ All settings are environment variables and all are optional.
 
 *Your name → 📊 Export report* saves one Excel file in the **`data exports`** folder next to Gate Tasks. The folder is created the first time. The report has these sheets:
 
-- **Summary:** key figures, a verdict and charts. The category and person breakdowns appear only when there's more than one.
+- **Summary:** a dark dashboard in the app's colors, with key figures, a verdict and the status donut. It also has pass/fail and completion bars, a few highlights worth reading, and breakdowns by category and by person (each only when there's more than one).
 - **Passed**, **Failed**, **Open** and **No Need:** only the ones that have tests.
 - **Notes & anomalies:** failed tests, overdue tests and open tests unchanged for 14+ days, plus every note.
 - **All tests:** everything in one table.
