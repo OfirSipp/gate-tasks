@@ -221,13 +221,13 @@ function openExport() {
         : '<button type="button" class="btn-success" onclick="runExport(null)">Export my board</button>';
     openModal(`
         <h2>📊 Export report</h2>
-        <p class="sub">Saves an Excel report and a CSV file in the <strong>data exports</strong> folder next to Gate Tasks.
+        <p class="sub">Saves one Excel report in the <strong>data exports</strong> folder next to Gate Tasks.
             The folder is created the first time.</p>
         <ul class="export-list">
-            <li>📈 Summary: totals, pass rate and charts</li>
-            <li>✅ Passed and ❌ failed tests on separate sheets, plus the open ones</li>
-            <li>⚠️ Notes and anomalies: failed, overdue and stale tests</li>
-            <li>🗂 Every test in one table, also as CSV</li>
+            <li>Summary: key figures, a verdict and charts</li>
+            <li>Passed and failed tests on separate sheets, plus the open ones</li>
+            <li>Notes and anomalies: failed, overdue and stale tests</li>
+            <li>Every test in one table</li>
         </ul>
         <div class="error" id="export-error"></div>
         <div class="actions" id="export-actions">
@@ -257,13 +257,13 @@ async function runExport(userId) {
         return;
     }
     const folder = decodeURIComponent(res.headers.get('X-Export-Folder') || '');
-    const [xlsx, csv] = decodeURIComponent(res.headers.get('X-Export-Files') || '').split('|');
+    const xlsx = decodeURIComponent(res.headers.get('X-Export-File') || 'Gate Tasks report.xlsx');
     if (lastExport) URL.revokeObjectURL(lastExport.url);
     lastExport = { url: URL.createObjectURL(await res.blob()), name: xlsx };
     openModal(`
         <h2>✅ Report ready</h2>
         <p class="sub">Saved in <strong>${esc(folder)}</strong></p>
-        <ul class="export-list"><li>📗 ${esc(xlsx)}</li><li>📄 ${esc(csv)}</li></ul>
+        <ul class="export-list"><li>${esc(xlsx)}</li></ul>
         <div class="actions">
             <button type="button" class="btn-secondary" onclick="closeModal()">Close</button>
             <button type="button" class="btn-success" onclick="downloadExport()">⬇ Download a copy</button>

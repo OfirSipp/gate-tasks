@@ -266,7 +266,7 @@ def create_app(db_path: Optional[Path] = None, legacy_json: Optional[Path] = Non
     # -- reports -----------------------------------------------------------------------------
     @app.post("/api/export")
     def export_report(body: ExportIn, user: dict = Depends(current_user)):
-        """Save an Excel report and a CSV in the exports folder and send the Excel file back."""
+        """Save an Excel report in the exports folder and send it back for an optional download."""
         if body.user_id is None and user["is_admin"]:
             tasks, label, slug, team = db.list_all_tasks(), "Whole team", "team", True
         else:
@@ -283,9 +283,9 @@ def create_app(db_path: Optional[Path] = None, legacy_json: Optional[Path] = Non
         except OSError as exc:
             raise HTTPException(status_code=500, detail=f"Couldn't write to {exports}: {exc.strerror or exc}")
         return Response(saved.data, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quote(saved.xlsx.name)}",
+                        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quote(saved.path.name)}",
                                  "X-Export-Folder": quote(str(saved.folder)),
-                                 "X-Export-Files": quote(f"{saved.xlsx.name}|{saved.csv.name}")})
+                                 "X-Export-File": quote(saved.path.name)})
 
     # -- admin -------------------------------------------------------------------------------
     @app.post("/api/admin/shutdown")
