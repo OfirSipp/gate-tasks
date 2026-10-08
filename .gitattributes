@@ -1,3 +1,5 @@
 * text=auto
 *.bat text eol=crlf
 *.png binary
+# Bundled Windows Python: ship byte-for-byte
+runtime/** -text

@@ -18,7 +18,7 @@ gate-tasks = "gate_tasks.main:main"
 packages = ["gate_tasks"]
 
 [tool.setuptools.package-data]
-gate_tasks = ["static/*.html", "static/css/*", "static/js/*", "static/pet/*"]
+gate_tasks = ["static/*.html", "static/css/*", "static/js/*", "static/pet/*", "static/fonts/*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

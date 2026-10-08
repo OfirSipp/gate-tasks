@@ -1,5 +1,11 @@
 @echo off
 cd /d "%~dp0"
+rem Use the Python that ships in runtime\python: works offline, nothing to install.
+if not exist "%~dp0runtime\python\python.exe" goto :installed_python
+start "Gate Tasks" "%~dp0runtime\python\python.exe" "%~dp0Gate_Tasks.py"
+exit /b 0
+
+:installed_python
 set "PY="
 where python >nul 2>nul && set "PY=python"
 if not defined PY where py >nul 2>nul && set "PY=py"

@@ -21,10 +21,15 @@ A small, self-hosted task manager for the office. Every person signs in to a **p
 
 ## Quick start (Windows)
 
-1. Install [Python 3.10+](https://www.python.org/downloads/) and tick **"Add python.exe to PATH"**.
-2. Double-click **`install_requirements.bat`** once.
-3. Double-click **`Start_Gate_Tasks.bat`**. Your browser opens at <http://127.0.0.1:8000>.
-4. On the first start, create the **admin** account. Then go to *your name → Manage team* to add colleagues.
+Gate Tasks comes with its own Python in `runtime\python`, so there is nothing to install and no internet needed. It runs on a stand-alone PC (Windows 10 or 11, 64-bit).
+
+1. Download the ZIP (*Code → Download ZIP*) and unzip it anywhere, or copy the unzipped folder from a USB stick.
+2. Double-click **`Start_Gate_Tasks.bat`**. Your browser opens at <http://127.0.0.1:8000>.
+3. On the first start, create the **admin** account. Then go to *your name → Manage team* to add colleagues.
+
+If Windows asks whether to run it, click *More info → Run anyway*. To avoid the question, right-click the ZIP → *Properties* → tick *Unblock* before unzipping.
+
+No `runtime` folder (for example, a copy without it)? Install [Python 3.10+](https://www.python.org/downloads/), tick **"Add python.exe to PATH"**, and double-click **`install_requirements.bat`** once.
 
 ## Quick start (any OS)
 

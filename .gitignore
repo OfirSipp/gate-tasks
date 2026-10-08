@@ -9,6 +9,8 @@ install_check.txt
 # Python
 __pycache__/
 *.py[cod]
+# ...but keep the bundled Windows Python's compiled modules
+!runtime/**/*.pyd
 .pytest_cache/
 .venv/
 venv/

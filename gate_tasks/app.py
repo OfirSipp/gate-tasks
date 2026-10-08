@@ -17,6 +17,7 @@ from .db import Database
 # On Windows the registry can map .js to text/plain, which browsers refuse to run as a module.
 mimetypes.add_type("text/javascript", ".js")
 mimetypes.add_type("text/css", ".css")
+mimetypes.add_type("font/woff2", ".woff2")
 
 Status = Literal["To Do", "In Progress", "No Need", "Completed"]
 Priority = Literal["Pass", "Fail"]
