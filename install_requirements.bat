@@ -1,6 +1,13 @@
 @echo off
 title Gate Tasks - install requirements
 cd /d "%~dp0"
+if not exist "%~dp0runtime\python\python.exe" goto :installed_python
+echo Gate Tasks ships with its own Python in runtime\python - there is nothing to install.
+echo Just double-click Start_Gate_Tasks.bat
+pause
+exit /b 0
+
+:installed_python
 set "PY="
 where python >nul 2>nul && set "PY=python"
 if not defined PY where py >nul 2>nul && set "PY=py"

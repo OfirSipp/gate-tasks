@@ -138,6 +138,15 @@ def test_validation_and_lockout(client):
     assert client.post("/api/login", json={"username": "ofir", "password": "secret123"}).status_code == 429
 
 
+def test_pages_need_no_internet(client):
+    setup_admin(client)
+    for path in ("/login", "/", "/static/css/app.css"):
+        body = client.get(path).text
+        assert "https://" not in body and "fonts.googleapis" not in body, path
+    font = client.get("/static/fonts/inter-latin.woff2")
+    assert font.status_code == 200 and font.headers["content-type"] == "font/woff2"
+
+
 def test_static_assets_have_js_mime(client):
     r = client.get("/static/pet/pet-core.js")
     assert r.status_code == 200 and "javascript" in r.headers["content-type"]
