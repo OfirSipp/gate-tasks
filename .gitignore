@@ -27,3 +27,6 @@ dist/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# graphify output (rebuilt each session by .claude/hooks/session-start.sh)
+graphify-out/
