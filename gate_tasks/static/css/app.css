@@ -129,6 +129,7 @@ button { padding: 10px 18px; border-radius: 10px; font-weight: 600; font-size: 1
 .priority-badge { padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
 .priority-Fail { color: #fda4af; background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.3); box-shadow: 0 0 10px rgba(244, 63, 94, 0.2); }
 .priority-Pass { color: #6ee7b7; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
+.priority-Pending { color: #fcd34d; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
 
 .task-actions { display: flex; gap: 6px; }
 .action-icon { background: none; border: none; color: #64748b; cursor: pointer; padding: 2px; transition: 0.2s; font-size: 14px; }

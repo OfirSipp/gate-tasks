@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- New **Pending** result next to Pass and Fail. New tasks start as Pending (amber badge) until edited to Pass or Fail. Completed + Pending counts as open in the export, not as a fail.
 - Deadline is optional; tasks without one show "No deadline" and are never marked overdue.
 - Runs on a stand-alone Windows PC with no Python and no internet: the ZIP includes Python 3.13 and all requirements in `runtime\python`, and `Start_Gate_Tasks.bat` uses it automatically.
 - The Inter font ships with the app, so pages no longer load anything from the internet.

@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
     title      TEXT NOT NULL,
     category   TEXT NOT NULL DEFAULT '',
-    priority   TEXT NOT NULL DEFAULT 'Pass',
+    priority   TEXT NOT NULL DEFAULT 'Pending',
     deadline   TEXT NOT NULL DEFAULT '',
     status     TEXT NOT NULL DEFAULT 'To Do',
     notes      TEXT NOT NULL DEFAULT '',
@@ -57,7 +57,7 @@ LEFT JOIN users o ON o.id = t.owner_id
 """
 
 STATUSES = ("To Do", "In Progress", "No Need", "Completed")
-PRIORITIES = ("Pass", "Fail")
+PRIORITIES = ("Pending", "Pass", "Fail")
 
 
 def now_iso() -> str:
@@ -207,7 +207,7 @@ class Database:
         cur = self._write(
             """INSERT INTO tasks(owner_id, created_by, title, category, priority, deadline, status, notes,
                                  created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (owner_id, created_by, data["title"], data.get("category", ""), data.get("priority", "Pass"),
+            (owner_id, created_by, data["title"], data.get("category", ""), data.get("priority", "Pending"),
              data.get("deadline", ""), data.get("status", "To Do"), data.get("notes", ""), stamp, stamp),
         )
         return self.get_task(cur.lastrowid)
@@ -238,7 +238,7 @@ class Database:
             if not isinstance(item, dict) or not str(item.get("title", "")).strip():
                 continue
             status = item.get("status") if item.get("status") in STATUSES else "To Do"
-            priority = item.get("priority") if item.get("priority") in PRIORITIES else "Pass"
+            priority = item.get("priority") if item.get("priority") in PRIORITIES else "Pending"
             self.create_task(owner_id, owner_id, {
                 "title": str(item["title"])[:200], "category": str(item.get("category", ""))[:60],
                 "priority": priority, "deadline": str(item.get("deadline", ""))[:10], "status": status,

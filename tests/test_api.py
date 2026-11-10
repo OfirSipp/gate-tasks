@@ -103,7 +103,7 @@ def test_export_report(client, tmp_path):
     setup_admin(client)
     dana = add_user(client, "dana")
     login(client, "ofir", "secret123")
-    client.post("/api/tasks", json={"title": "Gate 1", "category": "QA", "status": "Completed"})
+    client.post("/api/tasks", json={"title": "Gate 1", "category": "QA", "priority": "Pass", "status": "Completed"})
     client.post("/api/tasks", json={"title": "Gate 2", "category": "QA", "priority": "Fail", "status": "Completed",
                                     "notes": "Seal leaks"})
     client.post("/api/tasks", json={"title": "=1+1", "category": "Ops", "owner_id": dana["id"], "deadline": "2020-01-01"})
@@ -129,6 +129,24 @@ def test_export_report(client, tmp_path):
     assert mine["All tests"].max_row == 6
     assert client.post("/api/export", json={"user_id": 1}).status_code == 403
     assert len(list(folder.glob("*.xlsx"))) == 2
+
+
+def test_pending_until_edited(client, tmp_path):
+    setup_admin(client)
+    old = client.get("/api/tasks").json()[0]
+    task = client.post("/api/tasks", json={"title": "Gate 3", "category": "QA"}).json()
+    assert task["priority"] == "Pending"  # new tasks start as Pending
+    done = client.put(f"/api/tasks/{task['id']}", json={"status": "Completed"}).json()
+    assert done["priority"] == "Pending"  # moving it doesn't change the result
+    book = openpyxl.load_workbook(io.BytesIO(client.post("/api/export", json={}).content), data_only=True)
+    summary = book["Summary"]
+    # imported v1 task failed; Completed + Pending is still open, not a fail
+    assert [summary[c].value for c in ("B6", "D6", "F6", "J6")] == [2, 0, 1, 1]
+    notes = [c.value for row in book["Notes & anomalies"].iter_rows() for c in row]
+    assert "No result" in notes
+    edited = client.put(f"/api/tasks/{task['id']}", json={"priority": "Pass"}).json()
+    assert edited["priority"] == "Pass"
+    assert client.put(f"/api/tasks/{old['id']}", json={"priority": "Pending"}).json()["priority"] == "Pending"
 
 
 def test_admin_manages_team(client):

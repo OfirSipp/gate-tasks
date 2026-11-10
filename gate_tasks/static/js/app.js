@@ -533,8 +533,8 @@ function expandColumn(colName) {
 
 function expandAnalytics() {
     const total = allTasks.length;
-    const completed = allTasks.filter(t => t.status === 'Completed').length;
     const passCount = allTasks.filter(t => t.status === 'Completed' && t.priority === 'Pass').length;
+    const decided = allTasks.filter(t => t.status === 'Completed' && t.priority !== 'Pending').length;
     const today = todayISO();
     const overdue = allTasks.filter(t => t.deadline && t.deadline < today && !['Completed', 'No Need'].includes(t.status)).length;
     const categories = {};
@@ -545,7 +545,7 @@ function expandAnalytics() {
         <h2>🚀 Advanced Analytics — ${esc(viewingId === me.id ? 'My board' : personName(viewingId))}</h2>
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; margin-bottom:20px;">
             ${tile('Total tasks', total, '#fff')}
-            ${tile('Pass rate', `${completed > 0 ? Math.round((passCount / completed) * 100) : 0}%`, '#10b981')}
+            ${tile('Pass rate', `${decided > 0 ? Math.round((passCount / decided) * 100) : 0}%`, '#10b981')}
             ${tile('Overdue', overdue, overdue ? '#fda4af' : '#fff')}
         </div>
         <h3 style="font-size:14px; margin-bottom:10px; color:#cbd5e1;">Category Breakdown</h3>
@@ -671,12 +671,14 @@ function drawCharts(counts, total) {
     const completedTasks = allTasks.filter(t => t.status === 'Completed');
     const passCount = completedTasks.filter(t => t.priority === 'Pass').length;
     const failCount = completedTasks.filter(t => t.priority === 'Fail').length;
+    const pendingCount = allTasks.filter(t => t.priority === 'Pending').length;
     const totalPF = passCount + failCount;
     const passPercent = totalPF === 0 ? 0 : Math.round((passCount / totalPF) * 100);
     const failPercent = totalPF === 0 ? 0 : Math.round((failCount / totalPF) * 100);
     document.getElementById('pass-fail-box').innerHTML = `
         <div style="display: flex; justify-content: space-between; width: 100%; margin-bottom: 12px;">
             <span style="color:#10b981; font-weight:700; font-size:13px;">Pass: ${passCount} <span style="font-weight:400">(${passPercent}%)</span></span>
+            <span style="color:#fcd34d; font-weight:700; font-size:13px;">Pending: ${pendingCount}</span>
             <span style="color:#f43f5e; font-weight:700; font-size:13px;">Fail: ${failCount} <span style="font-weight:400">(${failPercent}%)</span></span>
         </div>
         <div style="width: 100%; height: 16px; background: rgba(244, 63, 94, 0.3); border-radius: 8px; overflow: hidden; display: flex;">

@@ -1,6 +1,7 @@
 """The Excel test report, styled like the app: dark panels, the app's colours, charts and highlights.
 
 A test is a task: Completed + Pass = passed, Completed + Fail = failed, To Do / In Progress = open.
+Completed + Pending (no result yet) also counts as open.
 Every number on the Summary is a formula over the "All tests" sheet, with its value cached so
 previewers that don't calculate still show it. The verdict and highlights are a snapshot.
 """
@@ -73,7 +74,7 @@ class Export:
 # the numbers
 # ---------------------------------------------------------------------------------------------
 def outcome(status: str, mark: str) -> str:
-    if status == "Completed":
+    if status == "Completed" and mark in ("Pass", "Fail"):
         return "Passed" if mark == "Pass" else "Failed"
     return "No Need" if status == "No Need" else "Open"
 
@@ -102,7 +103,8 @@ def to_rows(tasks: list[dict], today: date) -> list[Row]:
             id=t["id"], title=t["title"], category=(t["category"] or "").strip(), mark=t["priority"],
             status=t["status"], outcome=result, owner=t.get("owner_name") or "",
             source=(t.get("created_by_name") or "") if assigned else "", deadline=due,
-            days_overdue=(today - due).days if result == "Open" and due and due < today else None,
+            days_overdue=(today - due).days if result == "Open" and t["status"] != "Completed" and due and due < today
+            else None,
             created=_local(t["created_at"]), updated=_local(t["updated_at"]), notes=(t["notes"] or "").strip(),
         ))
     return rows
@@ -114,6 +116,8 @@ def anomalies(rows: list[Row], today: date) -> list[tuple[str, str, Row, str]]:
     for r in rows:
         if r.outcome == "Failed":
             found.append((0, "High", "Failed test", r, "Finished with a Fail result."))
+        elif r.status == "Completed" and r.mark == "Pending":
+            found.append((1, "Medium", "No result", r, "Completed, but still marked Pending."))
         elif r.days_overdue:
             days = f"{r.days_overdue} day{'s' if r.days_overdue != 1 else ''}"
             high = r.days_overdue >= 7
@@ -391,7 +395,7 @@ def build_workbook(rows: list[Row], *, scope_label: str, generated_by: str, now:
               "finished with Fail"),
              (7, "Pass rate", "=IF(D6+F6=0,0,D6/(D6+F6))", count["Passed"] / finished if finished else 0, SKY,
               "0%", "passed / finished"),
-             (9, "Open", f'=COUNTIF({rng("Outcome")},"Open")', count["Open"], "#818CF8", "0", "to do + in progress"),
+             (9, "Open", f'=COUNTIF({rng("Outcome")},"Open")', count["Open"], "#818CF8", "0", "unfinished or pending"),
              (11, "Overdue", f'=COUNTIF({rng("Days overdue")},">0")', overdue, AMBER, "0", "open, past the deadline")]
     ws.set_row(4, 22)
     ws.set_row(5, 46)
@@ -587,7 +591,7 @@ def build_workbook(rows: list[Row], *, scope_label: str, generated_by: str, now:
     _section(ws, th, top, "How to read this report", 1, 12)
     for n, line in enumerate([
         "Passed / Failed: finished (Completed) tests with a Pass / Fail result. Pass rate = passed / finished.",
-        "Open: To Do or In Progress. No need: tests that were dropped.",
+        "Open: To Do or In Progress, or Completed but still Pending a result. No need: tests that were dropped.",
         "Overdue: open tests whose deadline was before the export date. Tests without a deadline are never overdue.",
         f"Stale: open tests with no change for {STALE_DAYS} days or more.",
         f"Every number on this sheet is a formula over the '{DATA_SHEET}' sheet. The verdict and highlights "
@@ -611,7 +615,7 @@ def build_workbook(rows: list[Row], *, scope_label: str, generated_by: str, now:
         ("Passed", "Passed tests", "Finished tests with a Pass result. Nice work.", base + owner + tail),
         ("Failed", "Failed tests", "Finished tests with a Fail result. Their notes are the place to start.",
          base + owner + tail),
-        ("Open", "Open tests", "To Do and In Progress, most overdue first.", open_cols),
+        ("Open", "Open tests", "To Do, In Progress and Completed-but-Pending, most overdue first.", open_cols),
         ("No Need", "No need", "Tests that were dropped.", base + owner + tail),
     ]:
         selected = [r for r in rows if r.outcome == name]

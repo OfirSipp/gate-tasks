@@ -21,7 +21,7 @@ mimetypes.add_type("text/css", ".css")
 mimetypes.add_type("font/woff2", ".woff2")
 
 Status = Literal["To Do", "In Progress", "No Need", "Completed"]
-Priority = Literal["Pass", "Fail"]
+Priority = Literal["Pending", "Pass", "Fail"]
 Username = Field(min_length=2, max_length=40, pattern=r"^[A-Za-z0-9._-]+$")
 Password = Field(min_length=6, max_length=200)
 DisplayName = Field(min_length=1, max_length=60)
@@ -60,7 +60,7 @@ class UserUpdateIn(BaseModel):
 class TaskIn(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     category: str = Field(default="", max_length=60)
-    priority: Priority = "Pass"
+    priority: Priority = "Pending"  # stays Pending until someone marks it Pass or Fail
     deadline: str = Field(default="", max_length=10)
     status: Status = "To Do"
     notes: str = Field(default="", max_length=10000)
